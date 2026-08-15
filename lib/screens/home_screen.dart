@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -13,6 +14,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
   late AnimationController controller;
   late Animation<double> fadeTextAnimation;
+  Timer? _fadeTimer;
 
   @override
   void initState() {
@@ -28,13 +30,18 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       ),
     );
 
-    Future.delayed(const Duration(milliseconds: 700), () => controller.forward());
+    _fadeTimer = Timer(const Duration(milliseconds: 700), () {
+      if (mounted) {
+        controller.forward();
+      }
+    });
 
     super.initState();
   }
 
   @override
   void dispose() {
+    _fadeTimer?.cancel();
     controller.dispose();
     super.dispose();
   }
