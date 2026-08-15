@@ -8,7 +8,7 @@ The workflow runs on pull requests and pushes to `main`:
 - `flutter analyze`
 - `flutter test`
 - `flutter build web --release`
-- deploys `build/web` to an AWS EC2 server over SSH only after a successful push to `main`
+- deploys `build/web` to the nginx directory on the EC2 self-hosted runner only after a successful push to `main`
 
 ## GitHub Secrets
 
@@ -18,14 +18,50 @@ Repository `Settings` -> `Secrets and variables` -> `Actions` -> `New repository
 
 | Secret | Value | Required |
 | --- | --- | --- |
-| `AWS_SSH_PRIVATE_KEY` | contents of `C:\Users\akash\Downloads\goismo-test.pem` | Yes |
+| `AWS_SSH_PRIVATE_KEY` | no longer required when the runner is installed on the EC2 instance | No |
 
 The workflow is already configured to deploy to:
 
 - host: `3.6.130.111`
 - user: `ubuntu`
-- port: `22`
 - path: `/var/www/flutter-open-ui`
+
+## Self-Hosted Runner Setup
+
+Register the EC2 instance as a repository runner:
+
+1. Open the repository on GitHub and go to `Settings` -> `Actions` -> `Runners` -> `New self-hosted runner`.
+2. Select `Linux` and `x64`.
+3. Connect to the EC2 instance as `ubuntu` and run the commands GitHub displays. GitHub provides the current runner download URL and one-time registration token.
+4. When GitHub asks for labels, keep the default labels `self-hosted`, `Linux`, and `X64`.
+5. Install and start the runner as a service using the commands shown by GitHub, usually:
+
+```bash
+sudo ./svc.sh install ubuntu
+sudo ./svc.sh start
+```
+
+The runner must remain online. Check it under `Settings` -> `Actions` -> `Runners`; it should show `Idle` before you push code.
+
+The workflow uses this runner for both build and deploy jobs:
+
+```yaml
+runs-on: [self-hosted, Linux, X64]
+```
+
+Install the build tools on the EC2 instance before running the workflow:
+
+```bash
+sudo apt update
+sudo apt install -y git curl unzip xz-utils zip libglu1-mesa rsync nginx
+```
+
+Install Flutter using the official Linux instructions, then verify it with:
+
+```bash
+flutter --version
+flutter doctor
+```
 
 ## EC2 Setup
 
@@ -45,20 +81,8 @@ sudo chown -R ubuntu:ubuntu /var/www/flutter-open-ui
 
 Make sure your EC2 security group allows inbound traffic on:
 
-- `22` from your IP or GitHub Actions runners for SSH deploys
+- `22` from your IP for administration (the self-hosted runner performs deployment locally)
 - `80` from the internet for the website
-
-## Add The SSH Key To GitHub
-
-Do not commit `goismo-test.pem` to this repository.
-
-In PowerShell, copy the private key content:
-
-```powershell
-Get-Content C:\Users\akash\Downloads\goismo-test.pem -Raw
-```
-
-Create a GitHub Actions repository secret named `AWS_SSH_PRIVATE_KEY` and paste the full output, including the `BEGIN` and `END` lines.
 
 Point nginx at the Flutter web build:
 

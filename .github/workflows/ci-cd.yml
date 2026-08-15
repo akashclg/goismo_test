@@ -16,7 +16,7 @@ concurrency:
 jobs:
   build-web:
     name: Analyze, test, and build web
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64]
 
     steps:
       - name: Checkout
@@ -51,7 +51,7 @@ jobs:
 
   deploy:
     name: Deploy to AWS EC2
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64]
     needs: build-web
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
@@ -62,13 +62,5 @@ jobs:
           name: flutter-web-build
           path: build/web
 
-      - name: Deploy files over SSH
-        uses: easingthemes/ssh-deploy@v5.1.0
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.AWS_SSH_PRIVATE_KEY }}
-          REMOTE_HOST: 3.6.130.111
-          REMOTE_USER: ubuntu
-          REMOTE_PORT: 22
-          SOURCE: build/web/
-          TARGET: /var/www/flutter-open-ui
-          ARGS: -rlgoDzvc --delete
+      - name: Deploy files to nginx directory
+        run: rsync -rlgoDzvc --delete build/web/ /var/www/flutter-open-ui/
