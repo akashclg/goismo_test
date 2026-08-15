@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_openui/utils/sizing.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -19,7 +18,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
   void initState() {
     controller = AnimationController(
       vsync: this,
-      duration: Duration(milliseconds: 700),
+      duration: const Duration(milliseconds: 700),
     );
 
     fadeTextAnimation = Tween<double>(begin: 0, end: 1).animate(
@@ -29,7 +28,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       ),
     );
 
-    Future.delayed(Duration(milliseconds: 700), () => controller.forward());
+    Future.delayed(const Duration(milliseconds: 700), () => controller.forward());
 
     super.initState();
   }
@@ -42,7 +41,21 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
   @override
   Widget build(BuildContext context) {
-    List<int> items = List.generate(13, (item) => item);
+    const items = [
+      'showcase/animated_fruits.png',
+      'showcase/animate_cover.png',
+      'showcase/car.png',
+      'showcase/circle_carousel.png',
+      'showcase/docking_bar_01.png',
+      'showcase/doctor_appointment.png',
+      'showcase/doughnuts_animate.png',
+      'showcase/fade_carousel.png',
+      'showcase/fashion_shop.png',
+      'showcase/fruity_lips.png',
+      'showcase/language_app.png',
+      'showcase/nft_card_gallery.png',
+      'showcase/nike_shop.png',
+    ];
     return Scaffold(
       body: Transform.rotate(
         angle: 0.5 * pi,
@@ -59,17 +72,17 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     perspective: 0.009,
                     itemExtent: AppSizing.height(context) * 0.15,
                     children: items.map(
-                      (index) {
+                      (imagePath) {
                         return GestureDetector(
                           onTap: () async {},
                           child: Transform.rotate(
                             angle: -0.5 * pi,
                             child: Hero(
-                              tag: index,
+                              tag: imagePath,
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(10),
                                 child: Image.asset(
-                                  "assets/images/image_${index}.jpg",
+                                  imagePath,
                                   fit: BoxFit.cover,
                                   width: AppSizing.width(context) * 0.3,
                                 ),
